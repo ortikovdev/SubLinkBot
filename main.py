@@ -1,5 +1,9 @@
 import telebot
+from telegram import Update
 from telebot.types import ReplyKeyboardMarkup, KeyboardButton
+from telegram.ext import CallbackContext
+
+from telegram.ext import Updater, CommandHandler, CallbackContext
 
 TOKEN = '6750835343:AAG8AbiQphxwT7L-EIea3l4Dcfo9C1GQZe4'
 bot = telebot.TeleBot(TOKEN)
@@ -30,12 +34,26 @@ def handle_contact(message):
                                       f"\nThen press Subs check")
 
 
+# @bot.message_handler(commands=['checksubscription'])
+# def subscribe_check(message):
+#     if message.chat.id in get_channel_members(message):
+#         bot.send_message(message.chat.id, f"Thank you!")
+#     else:
+#         bot.send_message(message.chat.id, f"You are not subscribed to this channel")
+
 @bot.message_handler(commands=['checksubscription'])
-def subscribe_check(message):
-    if message.chat.id in get_channel_members(message):
-        bot.send_message(message.chat.id, f"Thank you!")
-    else:
-        bot.send_message(message.chat.id, f"You are not subscribed to this channel")
+def check_subscription(update: Update, context: CallbackContext) -> None:
+    user_id = update.effective_user.id
+    chat_id = "@sublinkchannel"
+    try:
+        member = context.bot.(chat_id, user_id)
+        if member.status in ["member", "administrator", "creator"]:
+            update.message.reply_text("You are a subscriber of the channel")
+        else:
+            update.message.reply_text("You are not a subscriber of the channel")
+    except Exception as e:
+        print(e)
+        update.message.reply_text("An error occurred while checking subscription status.")
 
 
 if __name__ == "__main__":
