@@ -62,5 +62,6 @@ def check_subscription(message):
         # print("Error while subscribing", e)
         bot.send_message(message.chat.id, f"Oops something went wrong. Please try again later")
 
+
 if __name__ == "__main__":
     bot.polling(none_stop=True)
