@@ -1,3 +1,5 @@
+import time
+
 import telebot
 from telegram import Update
 from telebot.types import ReplyKeyboardMarkup, KeyboardButton
@@ -18,7 +20,7 @@ def start(message):
     keyboard = ReplyKeyboardMarkup(row_width=4, resize_keyboard=True, one_time_keyboard=True, is_persistent=True)
     button1 = KeyboardButton(text="Share Contact", request_contact=True)
     button2 = KeyboardButton(text="Locate", request_location=True)
-    button3 = KeyboardButton(text="/checksubscription")
+    button3 = KeyboardButton(text="/check")
     keyboard.add(button1, button2, button3)
 
     bot.send_message(message.chat.id, greeting_text, reply_markup=keyboard)
@@ -41,20 +43,24 @@ def handle_contact(message):
 #     else:
 #         bot.send_message(message.chat.id, f"You are not subscribed to this channel")
 
-@bot.message_handler(commands=['checksubscription'])
-def check_subscription(update: Update, context: CallbackContext) -> None:
-    user_id = update.effective_user.id
-    chat_id = "@sublinkchannel"
+@bot.message_handler(commands=['check'])
+def check_subscription(message):
+    user_id = message.from_user.id
+    channel_id = "@sublinkchannel"
+    private_group_id = "https://t.me/+e6HHxnz6iuZjNGNi"
     try:
-        member = context.bot.(chat_id, user_id)
-        if member.status in ["member", "administrator", "creator"]:
-            update.message.reply_text("You are a subscriber of the channel")
+        member = bot.get_chat_member(channel_id, user_id)
+        if member.status == 'member':
+            # print("Subscribed")
+            bot.send_message(message.chat.id, f"Congratulations! Wait a link of the group!")
+            time.sleep(6)
+            bot.send_message(message.chat.id, f"Subscribe to {private_group_id}")
         else:
-            update.message.reply_text("You are not a subscriber of the channel")
+            # print("Unsubscribed")
+            bot.send_message(message.chat.id, f"You have to subscribe to the channel at first. PLease share contact!")
     except Exception as e:
-        print(e)
-        update.message.reply_text("An error occurred while checking subscription status.")
-
+        # print("Error while subscribing", e)
+        bot.send_message(message.chat.id, f"Oops something went wrong. Please try again later")
 
 if __name__ == "__main__":
     bot.polling(none_stop=True)
