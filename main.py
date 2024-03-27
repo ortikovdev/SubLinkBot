@@ -10,11 +10,21 @@ from telegram.ext import CallbackContext
 from telegram.ext import Updater, CommandHandler, CallbackContext
 from telebot.types import ReplyKeyboardMarkup, KeyboardButton
 
+
+import os.path
+
+from google.auth.transport.requests import Request
+from google.oauth2.credentials import Credentials
+from google_auth_oauthlib.flow import InstalledAppFlow
+from googleapiclient.discovery import build
+from googleapiclient.errors import HttpError
+
+
 TOKEN = '6750835343:AAG8AbiQphxwT7L-EIea3l4Dcfo9C1GQZe4'
 bot = telebot.TeleBot(TOKEN)
 
-conn = sqlite3.connect('videos.db')
-cursor = conn.cursor()
+# conn = sqlite3.connect('videos.db')
+# cursor = conn.cursor()
 
 user_data = {}
 
@@ -35,37 +45,43 @@ def start(message):
     bot.send_message(message.chat.id, greeting_text, reply_markup=keyboard)
 
 
-CHANNELUSER = "https://t.me/+nvovNsvJC_gzYjg6"
+# CHANNELUSER = "https://t.me/+nvovNsvJC_gzYjg6"
 
 
-def get_channel_videos(channel_username):
-    try:
-        messages = bot.get_updates(chat_id=-1002034404872)
-        print(messages)
-        videos = []
-        for message in messages:
-            if message.video is not None:
-                videos.append(message.video)
-        return videos
-    except Exception as e:
-        print("Error getting channel videos", e)
-        return []
+# def get_channel_videos(channel_username):
+#     try:
+#         messages = bot.get_updates(chat_id=-1002034404872)
+#         print(messages)
+#         videos = []
+#         for message in messages:
+#             if message.video is not None:
+#                 videos.append(message.video)
+#         return videos
+#     except Exception as e:
+#         print("Error getting channel videos", e)
+#         return []
 
 
 @bot.message_handler(func=lambda message: message.text == "Watch Video")
 def watch_video(message):
-    # video_link = "https://www.youtube.com/watch?v=RV3IzFlylBw"
-    videos = get_channel_videos(CHANNELUSER)
-    if videos:
-        keyboard = InlineKeyboardMarkup(row_width=1)
-        for video in videos:
-            button = InlineKeyboardButton(text="Watch Video", url=video.get_file().file_path)
-            keyboard.add(button)
+    video_link = "https://youtu.be/YTg4yuo1fA8"
+    button = InlineKeyboardMarkup([[InlineKeyboardButton(text="Watch Video", url=video_link)]])
+    bot.send_message(message.chat.id, 'Hi students. Here you will find some useful!', reply_markup=button)
+    # videos = get_channel_videos(CHANNELUSER)
+    # if videos:
+    #     keyboard = InlineKeyboardMarkup(row_width=1)
+    #     for video in videos:
+    #         button = InlineKeyboardButton(text="Watch Video", url=video.get_file().file_path)
+    #         keyboard.add(button)
+    #
+    #     bot.send_message(message.chat.id, "Here are some videos:", reply_markup=keyboard)
+    # else:
+    #     bot.send_message(message.chat.id, "No videos")
+    # bot.edit_message_reply_markup(message.chat.id, "Here's the vieo link:")
 
-        bot.send_message(message.chat.id, "Here are some videos:", reply_markup=keyboard)
-    else:
-        bot.send_message(message.chat.id, "No videos")
-    # bodt.edit_message_reply_markup(message.chat.id, "Here's the vieo link:")
+    # button = InlineKeyboardMarkup(text="Watch Video", url=video_link)
+    # keyboard.add(button)
+
 
 # def get_channel_members(message):
 #     return [message.chat.id]
