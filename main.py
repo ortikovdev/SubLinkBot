@@ -1,9 +1,10 @@
+import sqlite3
 import time
 
 import telebot
 
 from telegram import Update
-from telebot.types import ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardButton
+from telebot.types import ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import CallbackContext
 
 from telegram.ext import Updater, CommandHandler, CallbackContext
@@ -11,6 +12,9 @@ from telebot.types import ReplyKeyboardMarkup, KeyboardButton
 
 TOKEN = '6750835343:AAG8AbiQphxwT7L-EIea3l4Dcfo9C1GQZe4'
 bot = telebot.TeleBot(TOKEN)
+
+conn = sqlite3.connect('videos.db')
+cursor = conn.cursor()
 
 user_data = {}
 
@@ -21,26 +25,51 @@ def start(message):
     greeting_text = f"Hello, {user_name}! 👋\n\nPlease share your contact"
 
     # Create a custom keyboard with a "Share Contact" button
-    keyboard = ReplyKeyboardMarkup(row_width=2, resize_keyboard=True, one_time_keyboard=True, is_persistent=True)
+    keyboard = ReplyKeyboardMarkup(row_width=4, resize_keyboard=True, one_time_keyboard=True, is_persistent=True)
     # keyboard = [[InlineKeyboardButton("Watch Video", callback_data='watch_video')]]
     button1 = KeyboardButton(text="Share Contact", request_contact=True)
     button2 = KeyboardButton(text="Watch Video")
     button3 = KeyboardButton(text="/check")
-    button4 = KeyboardButton(text="/friend")
-    keyboard.add(button1, button2, button3, button4)
+    keyboard.add(button1, button2, button3)
 
     bot.send_message(message.chat.id, greeting_text, reply_markup=keyboard)
 
 
+CHANNELUSER = "https://t.me/+nvovNsvJC_gzYjg6"
+
+
+def get_channel_videos(channel_username):
+    try:
+        messages = bot.get_updates(chat_id=-1002034404872)
+        print(messages)
+        videos = []
+        for message in messages:
+            if message.video is not None:
+                videos.append(message.video)
+        return videos
+    except Exception as e:
+        print("Error getting channel videos", e)
+        return []
+
+
 @bot.message_handler(func=lambda message: message.text == "Watch Video")
 def watch_video(message):
-    video_link = "https://www.youtube.com/watch?v=RV3IzFlylBw"
-    # bot.edit_message_reply_markup(message.chat.id, "Here's the video link:")
-    bot.send_message(message.chat.id, video_link)
+    # video_link = "https://www.youtube.com/watch?v=RV3IzFlylBw"
+    videos = get_channel_videos(CHANNELUSER)
+    if videos:
+        keyboard = InlineKeyboardMarkup(row_width=1)
+        for video in videos:
+            button = InlineKeyboardButton(text="Watch Video", url=video.get_file().file_path)
+            keyboard.add(button)
+
+        bot.send_message(message.chat.id, "Here are some videos:", reply_markup=keyboard)
+    else:
+        bot.send_message(message.chat.id, "No videos")
+    # bodt.edit_message_reply_markup(message.chat.id, "Here's the vieo link:")
 
 # def get_channel_members(message):
 #     return [message.chat.id]
-#
+
 
 @bot.message_handler(content_types=['contact'])
 def handle_contact(message):
@@ -72,9 +101,8 @@ def check_subscription(message):
 
             bot.send_message(message.chat.id, f"Congratulations! Wait a link of the group!")
             # time.sleep(6)
-            bot.send_message(message.chat.id, f"Subscribe to {private_group_id}")
-
-            bot.send_message(message.chat.id, f"Share with 5 friends {referral_link}")
+            # bot.send_message(message.chat.id, f"Subscribe to {private_group_id}")
+            # bot.send_message(message.chat.id, f"Share with 5 friends {referral_link}")
             # time.sleep(6)
             # bot.send_message(message.chat.id, f"Subscribe to {private_group_id}")
 
