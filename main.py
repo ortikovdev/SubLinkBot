@@ -26,8 +26,8 @@ def start(message):
     button1 = KeyboardButton(text="Share Contact", request_contact=True)
     button2 = KeyboardButton(text="Watch Video")
     button3 = KeyboardButton(text="/check")
-    # button4 = KeyboardButton(text="/friend")
-    keyboard.add(button1, button2, button3)
+    button4 = KeyboardButton(text="/friend")
+    keyboard.add(button1, button2, button3, button4)
 
     bot.send_message(message.chat.id, greeting_text, reply_markup=keyboard)
 
