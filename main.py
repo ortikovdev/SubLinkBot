@@ -1,7 +1,9 @@
+import json
 import sqlite3
 import time
 
 import telebot
+import gspread
 
 from telegram import Update
 from telebot.types import ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardButton, InlineKeyboardMarkup
@@ -11,23 +13,22 @@ from telegram.ext import Updater, CommandHandler, CallbackContext
 from telebot.types import ReplyKeyboardMarkup, KeyboardButton
 
 
-import os.path
-
-from google.auth.transport.requests import Request
-from google.oauth2.credentials import Credentials
-from google_auth_oauthlib.flow import InstalledAppFlow
-from googleapiclient.discovery import build
-from googleapiclient.errors import HttpError
-
 
 TOKEN = '6750835343:AAG8AbiQphxwT7L-EIea3l4Dcfo9C1GQZe4'
 bot = telebot.TeleBot(TOKEN)
 
-# conn = sqlite3.connect('videos.db')
-# cursor = conn.cursor()
+conn = sqlite3.connect('contacts.db', check_same_thread=False)
+cursor = conn.cursor()
+
+
+cursor.execute("""CREATE TABLE IF NOT EXISTS contacts (
+                  user_id INTEGER PRIMARY KEY,
+                  user_name TEXT,
+                  phone_number TEXT
+              )""")
+conn.commit()
 
 user_data = {}
-
 
 @bot.message_handler(commands=['start'])
 def start(message):
@@ -44,9 +45,18 @@ def start(message):
 
     bot.send_message(message.chat.id, greeting_text, reply_markup=keyboard)
 
+@bot.message_handler(content_types=['contact'])
+def save_user_data(message):
+    user_id = message.from_user.id
+    user_name = message.from_user.first_name
+    phone_number = message.contact.phone_number
 
-# CHANNELUSER = "https://t.me/+nvovNsvJC_gzYjg6"
+    cursor.execute("INSERT OR IGNORE INTO contacts (user_id, user_name, phone_number) VALUES (?, ?, ?)",
+                   (user_id, user_name, phone_number))
 
+    conn.commit()
+    bot.send_message(message.chat.id, f"Thank you! Please subs to this channel: https://t.me/sublinkchannel "
+                                      f"\nThen press Subs check")
 
 # def get_channel_videos(channel_username):
 #     try:
@@ -115,8 +125,11 @@ def check_subscription(message):
         if member.status == 'member' or member.status == 'creator':
             # print("Subscribed")
 
-            bot.send_message(message.chat.id, f"Congratulations! Wait a link of the group!")
-            # time.sleep(6)
+            bot.send_message(message.chat.id, f"Congratulations! You've successfully subscribed")
+            # time.sleep(2)
+            video_link = "https://youtu.be/YTg4yuo1fA8"
+            button = InlineKeyboardMarkup([[InlineKeyboardButton(text="Watch Video", url=video_link)]])
+            bot.send_message(message.chat.id, 'Hi students. Here you will find some useful!', reply_markup=button)
             # bot.send_message(message.chat.id, f"Subscribe to {private_group_id}")
             # bot.send_message(message.chat.id, f"Share with 5 friends {referral_link}")
             # time.sleep(6)
@@ -124,7 +137,7 @@ def check_subscription(message):
 
         else:
             # print("Unsubscribed")
-            bot.send_message(message.chat.id, f"You have to subscribe to the channel at first. PLease share contact!")
+            bot.send_message(message.chat.id, f"You have to subscribe to this cahnnel -> https://t.me/sublinkchannel!")
     except Exception as e:
         # print("Error while subscribing", e)
         bot.send_message(message.chat.id, f"Oops something went wrong. Please try again later")
