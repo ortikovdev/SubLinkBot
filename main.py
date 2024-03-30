@@ -1,9 +1,7 @@
-import json
 import sqlite3
 import time
 
 import telebot
-import gspread
 
 from telegram import Update
 from telebot.types import ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardButton, InlineKeyboardMarkup
@@ -11,7 +9,6 @@ from telegram.ext import CallbackContext
 
 from telegram.ext import Updater, CommandHandler, CallbackContext
 from telebot.types import ReplyKeyboardMarkup, KeyboardButton
-
 
 
 TOKEN = '6750835343:AAG8AbiQphxwT7L-EIea3l4Dcfo9C1GQZe4'
